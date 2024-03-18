@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: web
+  labels:
+    app:  mongodb
+    project:  roboshop
+    tier: db
+spec:
+  selector:
+    matchLabels:
+      app:  mongodb
+      project:  roboshop
+      tier: db # has to match .spec.template.metadata.labels
+  serviceName: "mongodb"
+  replicas: 3 # by default is 1
+  minReadySeconds: 10 # by default is 0
+  template:
+    metadata:
+      labels:
+        app:  mongodb
+        project:  roboshop
+        tier: db  # has to match .spec.selector.matchLabels
+    spec:      
+      containers:
+      - name: mongodb
+        image: "jaga143/mongodb:{{.values.statefulset.imageversion}}"
+        volumeMounts:
+        - name: mongodb
+          mountPath: /data/db
+  volumeClaimTemplates:
+  - metadata:
+      name: mongodb
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "ebs-sc"
+      resources:
+        requests:
+          storage: 1Gi
